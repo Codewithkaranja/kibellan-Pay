@@ -13,15 +13,6 @@
         height: 100vh;
         background: #f4f4f4;
       }
-      button {
-        padding: 1rem 2rem;
-        font-size: 1rem;
-        cursor: pointer;
-        background: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-      }
       /* Modal styles */
       .modal {
         display: none;
@@ -74,10 +65,17 @@
       .error {
         color: red;
       }
+      button {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+      }
     </style>
   </head>
   <body>
-    <button id="buyBtn">Pay Now</button>
     <div class="status" id="status"></div>
 
     <!-- Payment Modal -->
@@ -91,16 +89,15 @@
 
     <script>
       const BASE_URL = "https://mpesa-server-4bvl.onrender.com";
-      const buyBtn = document.getElementById("buyBtn");
       const modal = document.getElementById("paymentModal");
       const phoneInput = document.getElementById("phoneInput");
       const submitBtn = document.getElementById("submitPhoneBtn");
       const statusEl = document.getElementById("status");
 
-      let currentProductId = 1; // default product ID, can be changed if needed
+      let currentProductId = 1; // default product ID
 
-      // Show modal
-      buyBtn.addEventListener("click", () => {
+      // Show modal immediately when page loads
+      window.addEventListener("DOMContentLoaded", () => {
         phoneInput.value = "";
         modal.style.display = "flex";
       });
