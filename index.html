@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pay With M-Pesa</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f4f4f4;
+      }
+      button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        cursor: pointer;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+      }
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+      }
+      .modal-content input {
+        padding: 0.5rem;
+        width: 80%;
+        margin-bottom: 1rem;
+      }
+      .status {
+        margin-top: 1rem;
+        text-align: center;
+      }
+      .loading span.spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ccc;
+        border-top: 2px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="buyBtn">Pay Now</button>
+    <div class="status" id="status"></div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+      <div class="modal-content">
+        <h3>Enter Your M-Pesa Number</h3>
+        <input type="text" id="phoneInput" placeholder="2547XXXXXXXX" />
+        <button id="submitPhoneBtn">Submit Payment</button>
+      </div>
+    </div>
+
+    <script>
+      const BASE_URL = "https://mpesa-server-4bvl.onrender.com";
+      const buyBtn = document.getElementById("buyBtn");
+      const modal = document.getElementById("paymentModal");
+      const phoneInput = document.getElementById("phoneInput");
+      const submitBtn = document.getElementById("submitPhoneBtn");
+      const statusEl = document.getElementById("status");
+
+      let currentProductId = 1; // default product ID, can be changed if needed
+
+      // Show modal
+      buyBtn.addEventListener("click", () => {
+        phoneInput.value = "";
+        modal.style.display = "flex";
+      });
+
+      // Close modal if clicked outside content
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+
+      // Send STK Push
+      async function sendSTKPush(phone) {
+        statusEl.innerHTML = `<div class="loading"><span class="spinner"></span> Sending STK push...</div>`;
+
+        try {
+          const res = await fetch(`${BASE_URL}/shop/pay`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, productId: currentProductId }),
+          });
+
+          const data = await res.json();
+
+          if (data.success || data.message) {
+            statusEl.innerHTML = `<div class="success">✅ STK Push sent! Complete payment on your phone.</div>`;
+          } else {
+            statusEl.innerHTML = `<div class="error">❌ Payment failed: ${
+              data.error || "Unknown error"
+            }</div>`;
+          }
+        } catch (err) {
+          console.error(err);
+          statusEl.innerHTML = `<div class="error">⚠️ Network or server error. Try again.</div>`;
+        }
+
+        setTimeout(() => (statusEl.innerHTML = ""), 10000);
+      }
+
+      // Handle modal submit
+      submitBtn.addEventListener("click", () => {
+        const phone = phoneInput.value.trim();
+        if (!/^2547\d{8}$/.test(phone)) {
+          alert("⚠️ Enter a valid M-Pesa number (e.g. 2547XXXXXXXX)");
+          return;
+        }
+        modal.style.display = "none";
+        sendSTKPush(phone);
+      });
+    </script>
+  </body>
+</html>
